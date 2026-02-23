@@ -1,52 +1,104 @@
 const Evento = require('../models/eventoModel');
 
-// POST /api/eventos
-async function crearEvento(req, res) {
-  try {
-    const { titulo, descripcion, fecha_inicio, hora, lugar_id } = req.body;
-    const evento = await Evento.create({ titulo, descripcion, fecha_inicio, hora, lugar_id });
-    res.json(evento);
-  } catch (e) { res.status(400).json({ error: e.message }); }
-}
 
-// GET /api/eventos
-async function listarEventos(_req, res) {
+// ================= CREAR =================
+const crearEvento = async (req, res) => {
   try {
-    const eventos = await Evento.findAll({
-      order: [['fecha_inicio', 'ASC NULLS LAST'], ['id', 'DESC']]
+    const { titulo, descripcion, fecha, hora, lugar_id } = req.body;
+
+    const evento = await Evento.create({
+      titulo,
+      descripcion,
+      fecha,
+      hora,
+      lugar_id
     });
+
+    res.status(201).json(evento);
+  } catch (err) {
+    res.status(500).json({
+      error: 'Error al crear evento',
+      detalle: err.message
+    });
+  }
+};
+
+
+// ================= LISTAR =================
+const obtenerEventos = async (_req, res) => {
+  try {
+    const eventos = await Evento.findAll();
     res.json(eventos);
-  } catch (e) { res.status(400).json({ error: e.message }); }
-}
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener eventos' });
+  }
+};
 
-// GET /api/eventos/:id
-async function obtenerEvento(req, res) {
+
+// ================= OBTENER POR ID =================
+const obtenerEventoPorId = async (req, res) => {
   try {
     const evento = await Evento.findByPk(req.params.id);
-    if (!evento) return res.status(404).json({ error: 'Evento no encontrado' });
+
+    if (!evento) {
+      return res.status(404).json({ error: 'Evento no encontrado' });
+    }
+
     res.json(evento);
-  } catch (e) { res.status(400).json({ error: e.message }); }
-}
+  } catch (err) {
+    res.status(500).json({ error: 'Error al buscar evento' });
+  }
+};
 
-// PUT /api/eventos/:id
-async function actualizarEvento(req, res) {
+
+// ================= ACTUALIZAR =================
+const actualizarEvento = async (req, res) => {
   try {
     const evento = await Evento.findByPk(req.params.id);
-    if (!evento) return res.status(404).json({ error: 'Evento no encontrado' });
-    const { titulo, descripcion, fecha_inicio, hora, lugar_id } = req.body;
-    await evento.update({ titulo, descripcion, fecha_inicio, hora, lugar_id });
-    res.json({ ok: true });
-  } catch (e) { res.status(400).json({ error: e.message }); }
-}
 
-// DELETE /api/eventos/:id
-async function eliminarEvento(req, res) {
+    if (!evento) {
+      return res.status(404).json({ error: 'Evento no encontrado' });
+    }
+
+    const { titulo, descripcion, fecha, hora, lugar_id } = req.body;
+
+    await evento.update({
+      titulo,
+      descripcion,
+      fecha,
+      hora,
+      lugar_id
+    });
+
+    res.json({ message: 'Evento actualizado correctamente' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al actualizar evento' });
+  }
+};
+
+
+// ================= ELIMINAR =================
+const eliminarEvento = async (req, res) => {
   try {
     const evento = await Evento.findByPk(req.params.id);
-    if (!evento) return res.status(404).json({ error: 'Evento no encontrado' });
+
+    if (!evento) {
+      return res.status(404).json({ error: 'Evento no encontrado' });
+    }
+
     await evento.destroy();
-    res.json({ ok: true });
-  } catch (e) { res.status(400).json({ error: e.message }); }
-}
 
-module.exports = { crearEvento, listarEventos, obtenerEvento, actualizarEvento, eliminarEvento };
+    res.json({ message: 'Evento eliminado correctamente' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al eliminar evento' });
+  }
+};
+
+
+module.exports = {
+  crearEvento,
+  obtenerEventos,
+  obtenerEventoPorId,
+  actualizarEvento,
+  eliminarEvento
+};

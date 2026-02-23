@@ -4,7 +4,6 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
 const db = require('./config/db');
-
 dotenv.config();
 
 const app = express();
@@ -88,7 +87,8 @@ safeMount('/api/roles',  './routes/rolRoutes');
 safeMount('/api/cargos', './routes/cargoRoutes');
 
 /* Asistencias: usa el archivo que SÍ existe en tu proyecto */
-safeMount('/api/asistencias',       './routes/asistenciaRoutes');
+safeMount('/api/asistencias', './routes/asistenciaRoutes');
+safeMount('/api/empleado-eventos', './routes/empleadoEventoRoutes');
 safeMount('/asistencias',           './routes/asistenciaRoutes'); // alias
 safeMount('/api/asistencia',        './routes/asistenciaRoutes'); // alias
 safeMount('/api/attendance',        './routes/asistenciaRoutes'); // alias

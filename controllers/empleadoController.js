@@ -3,7 +3,6 @@ const Empleado = require('../models/empleadoModel');
 const Rol = require('../models/rolModel');
 const Cargo = require('../models/cargoModel');
 
-
 // ================= CREAR =================
 const crearEmpleado = async (req, res) => {
   try {
@@ -16,6 +15,17 @@ const crearEmpleado = async (req, res) => {
       rol_id,
       cargo_id
     } = req.body;
+
+    // 🔎 Verificar si ya existe la cédula
+    const existeCedula = await Empleado.findOne({
+      where: { cedula }
+    });
+
+    if (existeCedula) {
+      return res.status(400).json({
+        error: 'La cédula ya está registrada'
+      });
+    }
 
     const empleado = await Empleado.create({
       cedula,
@@ -61,25 +71,35 @@ const obtenerEmpleados = async (_req, res) => {
 // ================= OBTENER POR ID =================
 const obtenerEmpleadoPorId = async (req, res) => {
   try {
-    const empleado = await Empleado.findByPk(req.params.id, {
-      include: [Rol, Cargo]
+    const { id } = req.params;
+
+    const empleado = await Empleado.findByPk(id, {
+      include: [
+        { model: Rol, as: 'rol' },
+        { model: Cargo, as: 'cargo' }
+      ]
     });
 
     if (!empleado) {
-      return res.status(404).json({ error: 'Empleado no encontrado' });
+      return res.status(404).json({
+        error: 'Empleado no encontrado'
+      });
     }
 
     res.json(empleado);
-  } catch (err) {
-    res.status(500).json({ error: 'Error al buscar empleado' });
+
+  } catch (error) {
+    res.status(500).json({
+      error: 'Error al obtener empleado',
+      detalle: error.message
+    });
   }
 };
 
 
-// ================= ACTUALIZAR =================
 const actualizarEmpleado = async (req, res) => {
   try {
-    const empleado = await Empleado.scope('withPassword').findByPk(req.params.id);
+    const empleado = await Empleado.scope('withSecret').findByPk(req.params.id);
 
     if (!empleado) {
       return res.status(404).json({ error: 'Empleado no encontrado' });
@@ -143,7 +163,10 @@ const loginEmpleado = async (req, res) => {
 
     const empleado = await Empleado.scope('withPassword').findOne({
       where: { cedula },
-      include: [Rol, Cargo]
+      include: [
+        { model: Rol, as: 'rol' },
+        { model: Cargo, as: 'cargo' }
+      ]
     });
 
     if (!empleado) {
