@@ -1,17 +1,16 @@
 // controllers/notificacionesController.js
 const { Op } = require('sequelize');
-const Empleado = require('../models/empleadoModel');
+const Empleado = require('../models/empleadoModel.js');
 const Notificacion = require('../models/notificacionModel.js');
-const NotificacionDetalle = require('../models/notificaciodetalleModel');
+const NotificacionDetalle = require('../models/notificacionEmpleadoModel.js');
 
-const { sendFCMToTokens } = require('../services/fcm');
+const { sendFCMToTokens } = require('../services/fcm.js');
 
 function chunk(arr, size = 900) {
   const out = []; for (let i=0;i<arr.length;i+=size) out.push(arr.slice(i,i+size)); return out;
 }
 const uniq = arr => [...new Set(arr.filter(Boolean))];
 
-// Guardar / borrar token de un empleado (para FCM)
 async function guardarToken(req, res) {
   try {
     const { id } = req.params;
@@ -20,39 +19,37 @@ async function guardarToken(req, res) {
     const emp = await Empleado.findByPk(id);
     if (!emp) return res.status(404).json({ error: 'Empleado no encontrado' });
     emp.device_token = device_token; await emp.save();
-    res.json({ ok:true });
+    res.json({ ok: true });
   } catch (e) { res.status(400).json({ error: e.message }); }
 }
+
 async function borrarToken(req, res) {
   try {
     const { id } = req.params;
     const emp = await Empleado.findByPk(id);
     if (!emp) return res.status(404).json({ error: 'Empleado no encontrado' });
     emp.device_token = null; await emp.save();
-    res.json({ ok:true });
+    res.json({ ok: true });
   } catch (e) { res.status(400).json({ error: e.message }); }
 }
 
-// Envíos
 async function enviarNotificaciones(req, res) {
-  try {
+  // try {
     const { titulo, cuerpo, empleadosIds = [] } = req.body;
     if (!titulo || !cuerpo) return res.status(400).json({ error: 'Falta titulo/cuerpo' });
     if (!empleadosIds.length) return res.status(400).json({ error: 'Sin empleadosIds' });
+
     const emps = await Empleado.findAll({ where: { id: { [Op.in]: empleadosIds } } });
     const tokens = uniq(emps.map(e => e.device_token));
     if (!tokens.length) return res.status(400).json({ error: 'Sin tokens válidos' });
-    // 👇 Crea el maestro
-    const notif = await Notificacion.create({
-      titulo, mensaje: cuerpo
-    }); 
+
+    const notif = await Notificacion.create({ titulo, mensaje: cuerpo });
+
     const batches = chunk(tokens);
     const results = [];
     for (const tks of batches) {
       const result = await sendFCMToTokens(tks, { titulo, cuerpo });
       results.push(result);
-
-      // 👇 Crea detalle por cada empleado
       for (const emp of emps) {
         if (!emp.device_token) continue;
         const fallo = result?.failedTokens?.includes(emp.device_token);
@@ -63,9 +60,10 @@ async function enviarNotificaciones(req, res) {
         });
       }
     }
-    res.json({ ok:true, batches: batches.length, results });
-  } catch (e) { res.status(400).json({ error: e.message }); }
+    res.json({ ok: true, batches: batches.length, results });
+  // } catch (e) { res.status(400).json({ error: e.message }); }
 }
+
 async function enviarBroadcast(req, res) {
   try {
     const { titulo, cuerpo } = req.body;
@@ -75,19 +73,13 @@ async function enviarBroadcast(req, res) {
     const tokens = uniq(emps.map(e => e.device_token));
     if (!tokens.length) return res.status(400).json({ error: 'No hay tokens registrados' });
 
-    // 👇 Crea el maestro igual que en enviarNotificaciones
-    const notif = await Notificacion.create({
-      titulo, mensaje: cuerpo, tipo: 'broadcast'
-    });
+    const notif = await Notificacion.create({ titulo, mensaje: cuerpo });
 
     const batches = chunk(tokens);
     const results = [];
-
     for (const tks of batches) {
       const result = await sendFCMToTokens(tks, { titulo, cuerpo });
       results.push(result);
-
-      // 👇 Mismo patrón de detalle
       for (const emp of emps) {
         if (!emp.device_token) continue;
         const fallo = result?.failedTokens?.includes(emp.device_token);
@@ -98,21 +90,22 @@ async function enviarBroadcast(req, res) {
         });
       }
     }
-
     res.json({ ok: true, totalTokens: tokens.length, batches: batches.length, results });
   } catch (e) { res.status(400).json({ error: e.message }); }
 }
+
 async function enviarTestAEmpleado(req, res) {
   try {
     const { id } = req.params;
-    const { titulo='Prueba', cuerpo='Test de notificación' } = req.body;
+    const { titulo = 'Prueba', cuerpo = 'Test de notificación' } = req.body;
     const emp = await Empleado.findByPk(id);
     if (!emp) return res.status(404).json({ error: 'Empleado no encontrado' });
     if (!emp.device_token) return res.status(400).json({ error: 'Empleado sin device_token' });
     const result = await sendFCMToTokens([emp.device_token], { titulo, cuerpo });
-    res.json({ ok:true, result });
+    res.json({ ok: true, result });
   } catch (e) { res.status(400).json({ error: e.message }); }
 }
+
 async function tokensStats(_req, res) {
   try {
     const total = await Empleado.count();
@@ -120,10 +113,15 @@ async function tokensStats(_req, res) {
     res.json({ totalEmpleados: total, conToken, sinToken: total - conToken });
   } catch (e) { res.status(400).json({ error: e.message }); }
 }
-//LISTAR NOTIFICACIONES ENVIADAS
+
 async function listarNotificaciones(req, res) {
-  try {    const notificaciones = await Notificacion.findAll({
-      include: [{ model: NotificacionDetalle, as: 'detalles',include: [{ model: Empleado, as: 'empleado', attributes: ['id', 'nombre', 'apellido'] }] }]
+  try {
+    const notificaciones = await Notificacion.findAll({
+      include: [{
+        model: NotificacionDetalle,
+        as: 'detalles',
+        include: [{ model: Empleado, as: 'empleado', attributes: ['id', 'nombre', 'apellido'] }]
+      }]
     });
     res.json(notificaciones);
   } catch (e) { res.status(400).json({ error: e.message }); }

@@ -5,10 +5,9 @@ const db = require('../config/db');
 const Lugar = db.define('Lugar', {
   id:         { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
   nombre:     { type: DataTypes.STRING, allowNull: false, unique: true },
-  ubicacion:  { type: DataTypes.STRING, allowNull: false },
+  direccion:  { type: DataTypes.STRING, allowNull: false },
   latitud:    { type: DataTypes.STRING, allowNull: false },
   longitud:   { type: DataTypes.STRING, allowNull: false },
-  descripcion:{ type: DataTypes.STRING, allowNull: true },
   radio:      { type: DataTypes.INTEGER, allowNull: false, defaultValue: 10 }
 }, {
   tableName: 'lugares',
@@ -17,7 +16,7 @@ const Lugar = db.define('Lugar', {
 });
 
 Lugar.prototype.getUbicacionCompleta = function () {
-  return `${this.nombre} - ${this.ubicacion} [${this.latitud}, ${this.longitud}]`;
+  return `${this.nombre} - ${this.direccion} [${this.latitud}, ${this.longitud}]`;
 };
 
 module.exports = Lugar;

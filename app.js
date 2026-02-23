@@ -90,7 +90,7 @@ safeMount('/api/asistencia',        './routes/asistenciaRoutes'); // alias
 safeMount('/api/attendance',        './routes/asistenciaRoutes'); // alias
 
 /* Otros módulos opcionales */
-safeMount('/api/notificaciones',    './routes/notificacionesroutes');
+safeMount('/api/notificaciones',    './routes/notificacionRoutes');
 safeMount('/api/eventos',           './routes/eventosRoutes');
 safeMount('/api/puntos-encuentro',  './routes/puntoencuentroRoutes');
 

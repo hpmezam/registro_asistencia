@@ -11,7 +11,6 @@ router.post('/', lugarController.crearLugar);
 
 // Actualizar un lugar por ID
 router.put('/:id', lugarController.actualizarLugar);
-
 // Eliminar un lugar por ID
 router.delete('/:id', lugarController.eliminarLugar);
 

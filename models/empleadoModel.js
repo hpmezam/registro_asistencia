@@ -4,19 +4,16 @@ const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 
 const Empleado = db.define('empleado', {
-  id:        { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-  cedula:    { type: DataTypes.STRING, allowNull: false, unique: true },
-  nombre:    { type: DataTypes.STRING, allowNull: false },
-  apellido:  { type: DataTypes.STRING, allowNull: false },
-  cargo:     { type: DataTypes.STRING, allowNull: false, defaultValue: 'empleado' },
-  rol:       { type: DataTypes.ENUM('admin','empleado'), allowNull: false, defaultValue: 'empleado' },
-  lugar_id:  { type: DataTypes.INTEGER, allowNull: true },
-
-  // Si algun dia usas password:
+  id:            { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+  cedula:        { type: DataTypes.STRING, allowNull: false, unique: true },
+  nombre:        { type: DataTypes.STRING, allowNull: false },
+  apellido:      { type: DataTypes.STRING, allowNull: false },
+  email:         { type: DataTypes.STRING, allowNull: true },
   password_hash: { type: DataTypes.STRING, allowNull: true, field: 'password_hash' },
-
-  // MUY IMPORTANTE: nombre de columna EXACTO en la BD
-  device_token: { type: DataTypes.TEXT, allowNull: true, field: 'device_token' }
+  rol_id:        { type: DataTypes.INTEGER, allowNull: true },
+  cargo_id:      { type: DataTypes.INTEGER, allowNull: true },
+  device_token:  { type: DataTypes.TEXT, allowNull: true, field: 'device_token' },
+  create_at:     { type: DataTypes.DATE, allowNull: true, field: 'create_at' }
 }, {
   tableName: 'empleados',
   timestamps: false,

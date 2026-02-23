@@ -1,4 +1,4 @@
-const Lugar = require('../models/lugareModel');
+const Lugar = require('../models/lugarModel');
 
 // Helper mínimo para sanear el radio
 function normalizarRadio(valor) {
@@ -21,19 +21,18 @@ exports.obtenerLugares = async (req, res) => {
 // Crear un nuevo lugar (requiere nombre, ubicación, latitud y longitud)
 exports.crearLugar = async (req, res) => {
   try {
-    let { nombre, ubicacion, latitud, longitud, descripcion, radio } = req.body;
+    let { nombre, direccion, latitud, longitud, radio } = req.body;
 
     // Validación simple (radio NO bloquea la creación; se normaliza)
-    if (!nombre || !ubicacion || !latitud || !longitud) {
+    if (!nombre || !direccion || !latitud || !longitud) {
       return res.status(400).json({ error: 'Faltan campos obligatorios' });
     }
 
     const nuevo = await Lugar.create({
       nombre,
-      ubicacion,
+      direccion,
       latitud,
       longitud,
-      descripcion,
       radio: normalizarRadio(radio) // <- saneo y default
     });
 
@@ -52,11 +51,14 @@ exports.actualizarLugar = async (req, res) => {
       return res.status(404).json({ error: 'Lugar no encontrado' });
     }
 
-    // Copia de body y saneo SOLO si viene radio
-    const updates = { ...req.body };
-    if (Object.prototype.hasOwnProperty.call(updates, 'radio')) {
-      updates.radio = normalizarRadio(updates.radio);
-    }
+    let { nombre, direccion, latitud, longitud, radio } = req.body;
+
+    const updates = {};
+    if (nombre)    updates.nombre    = nombre;
+    if (direccion) updates.direccion = direccion;
+    if (latitud)   updates.latitud   = latitud;
+    if (longitud)  updates.longitud  = longitud;
+    if (radio !== undefined) updates.radio = normalizarRadio(radio);
 
     await lugar.update(updates);
     res.json(lugar);
@@ -73,7 +75,6 @@ exports.eliminarLugar = async (req, res) => {
     if (!lugar) {
       return res.status(404).json({ error: 'Lugar no encontrado' });
     }
-
     await lugar.destroy();
     res.json({ mensaje: 'Lugar eliminado correctamente' });
   } catch (error) {
