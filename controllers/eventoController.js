@@ -1,6 +1,7 @@
 const Evento = require('../models/eventoModel');
-
-
+const Lugar = require('../models/lugarModel');
+// ================= ASOCIACIONES =================
+Evento.belongsTo(Lugar, { foreignKey: 'lugar_id', as: 'lugar' });
 // ================= CREAR =================
 const crearEvento = async (req, res) => {
   try {

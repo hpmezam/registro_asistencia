@@ -1,6 +1,7 @@
 const EmpleadoEvento = require('../models/empleadoEventoModel');
 const Empleado = require('../models/empleadoModel');
 const Evento = require('../models/eventoModel');
+const Lugar = require('../models/lugarModel');
 
 // Asociaciones (si no las tenés en un archivo central, ponelas aquí)
 EmpleadoEvento.belongsTo(Empleado, { foreignKey: 'empleado_id' });
@@ -30,7 +31,38 @@ async function listarPorEvento(req, res) {
     res.json(asignaciones);
   } catch (e) { res.status(400).json({ error: e.message }); }
 }
+ //GET /api/asignaciones/empleado/:empleado_id
+async function listarPorEmpleado(req, res) {
+  try {
+    const asignaciones = await EmpleadoEvento.findAll({
+      where: { empleado_id: req.params.empleado_id },
+      include: {
+        model: Evento,
+        attributes: ['titulo', 'fecha', 'hora'],
+        include: {
+          model: Lugar,
+          as: 'lugar',
+          attributes: ['nombre']
+        }
+      },
+      order: [['id', 'ASC']],
+      raw: true,
+      nest: true
+    });
 
+    const resultado = asignaciones.map(a => ({
+      emplado_evento_id: a.id,
+      empleado_id: a.empleado_id,
+      evento_id: a.evento_id,
+      titulo: a.evento.titulo,
+      fecha: a.evento.fecha,
+      hora: a.evento.hora,
+      lugar: a.evento.lugar.nombre
+    }));
+
+    res.json(resultado);
+  } catch (e) { res.status(400).json({ error: e.message }); }
+}
 // GET /api/asignaciones/:id
 async function obtener(req, res) {
   try {
@@ -59,4 +91,4 @@ async function eliminar(req, res) {
   } catch (e) { res.status(400).json({ error: e.message }); }
 }
 
-module.exports = { listarTodas, listarPorEvento, obtener, crear, eliminar };
+module.exports = { listarTodas, listarPorEvento, listarPorEmpleado, obtener, crear, eliminar };
