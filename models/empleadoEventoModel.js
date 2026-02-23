@@ -1,11 +1,24 @@
-const express = require('express');
-const router = express.Router();
-const ctrl = require('../controllers/empleadoEventoController');
+//Crear modelo para la tabla intermedia empleado_evento
+const { DataTypes } = require('sequelize');
+const db = require('../config/db');
+const EmpleadoEvento = db.define('EmpleadoEvento', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  empleado_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  evento_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  }
+}, {
+    tableName: 'empleado_eventos',
+    timestamps: false,
+    freezeTableName: true
+});
 
-router.get('/', ctrl.listarTodas);
-router.get('/evento/:evento_id', ctrl.listarPorEvento);
-router.get('/:id', ctrl.obtener);
-router.post('/', ctrl.crear);
-router.delete('/:id', ctrl.eliminar);
-
-module.exports = router;
+module.exports = EmpleadoEvento;

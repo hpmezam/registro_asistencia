@@ -1,16 +1,13 @@
-// routes/empleadoRoutes.js
+// routes/empleadoEventoRoutes.js
 const { Router } = require('express');
 const router = Router();
-const ctrl = require('../controllers/empleadoController');
-
-// 🔐 Login
-router.post('/login', ctrl.loginEmpleado);
+const ctrl = require('../controllers/empleadoEventoController');
 
 // 📌 CRUD
-router.get('/', ctrl.obtenerEmpleados);
-router.get('/:id', ctrl.obtenerEmpleadoPorId);
-router.post('/', ctrl.crearEmpleado);
-router.put('/:id', ctrl.actualizarEmpleado);
-router.delete('/:id', ctrl.eliminarEmpleado);
+router.get('/', ctrl.listarTodas);
+router.get('/evento/:evento_id', ctrl.listarPorEvento);
+router.get('/:id', ctrl.obtener);
+router.post('/', ctrl.crear);
+router.delete('/:id', ctrl.eliminar);
 
 module.exports = router;

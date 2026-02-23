@@ -3,7 +3,6 @@ const Empleado = require('../models/empleadoModel');
 const Rol = require('../models/rolModel');
 const Cargo = require('../models/cargoModel');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
 const login = async (req, res) => {
   try {

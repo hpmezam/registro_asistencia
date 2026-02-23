@@ -14,7 +14,11 @@ const Empleado = db.define('empleado', {
   rol_id:        { type: DataTypes.INTEGER, allowNull: true },
   cargo_id:      { type: DataTypes.INTEGER, allowNull: true },
   device_token:  { type: DataTypes.TEXT, allowNull: true, field: 'device_token' },
-  create_at:     { type: DataTypes.DATE, allowNull: true, field: 'create_at' }
+  create_at:     { type: DataTypes.DATE, allowNull: true, field: 'create_at' },
+  lugar_id: {
+  type: DataTypes.INTEGER,
+  allowNull: true
+}
 }, {
   tableName: 'empleados',
   timestamps: false,
@@ -42,4 +46,6 @@ const Cargo = require('./cargoModel');
 
 Empleado.belongsTo(Rol, { foreignKey: 'rol_id', as: 'rol' });
 Empleado.belongsTo(Cargo, { foreignKey: 'cargo_id', as: 'cargo' });
+// al final del empleadoModel.js, antes del module.exports
+Empleado.belongsTo(require('./lugarModel'), { foreignKey: 'lugar_id', as: 'lugar' });
 module.exports = Empleado;

@@ -81,14 +81,12 @@ function safeMount(mountPath, modulePath) {
 safeMount('/api/auth',              './routes/authRoutes');
 safeMount('/api/lugares',           './routes/lugarRoutes');
 safeMount('/api/empleados', './routes/empleadosRoutes');
-
 safeMount('/api/empleado-eventos',  './routes/empleadoEventoRoutes'); // <-- nuevo
 safeMount('/api/roles',  './routes/rolRoutes');
 safeMount('/api/cargos', './routes/cargoRoutes');
 
 /* Asistencias: usa el archivo que SÍ existe en tu proyecto */
 safeMount('/api/asistencias', './routes/asistenciaRoutes');
-safeMount('/api/empleado-eventos', './routes/empleadoEventoRoutes');
 safeMount('/asistencias',           './routes/asistenciaRoutes'); // alias
 safeMount('/api/asistencia',        './routes/asistenciaRoutes'); // alias
 safeMount('/api/attendance',        './routes/asistenciaRoutes'); // alias

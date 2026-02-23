@@ -44,7 +44,7 @@ const registrarSalida = async (req, res) => {
     res.json({ message: 'Salida registrada correctamente' });
 
   } catch (err) {
-    res.status(500).json({ error: 'Error al registrar salida' });
+    res.status(500).json({ error: 'Error al registrar salida', detalle: err.message });
   }
 };
 
@@ -57,7 +57,7 @@ const obtenerAsistencias = async (_req, res) => {
     });
     res.json(asistencias);
   } catch (err) {
-    res.status(500).json({ error: 'Error al obtener asistencias' });
+    res.status(500).json({ error: 'Error al obtener asistencias', detalle: err.message });
   }
 };
 
@@ -73,11 +73,32 @@ const obtenerAsistenciaPorId = async (req, res) => {
 
     res.json(asistencia);
   } catch (err) {
-    res.status(500).json({ error: 'Error al buscar asistencia' });
+    res.status(500).json({ error: 'Error al buscar asistencia', detalle: err.message });
   }
 };
 
+const obtenerAsistenciasRango = async (req, res) => {
+  try {
+    const { desde, hasta, empleadoId } = req.query;
+    const where = {};
 
+    if (empleadoId) where.empleado_id = empleadoId;
+
+    if (desde || hasta) {
+      where.hora_entrada = {};
+      if (desde) where.hora_entrada[Op.gte] = new Date(desde + 'T00:00:00');
+      if (hasta) where.hora_entrada[Op.lte] = new Date(hasta + 'T23:59:59');
+    }
+
+    const asistencias = await Asistencia.findAll({
+      where,
+      order: [['id', 'DESC']]
+    });
+    res.json(asistencias);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener asistencias', detalle: err.message });
+  }
+};
 // ================= ELIMINAR =================
 const eliminarAsistencia = async (req, res) => {
   try {
@@ -91,15 +112,58 @@ const eliminarAsistencia = async (req, res) => {
 
     res.json({ message: 'Asistencia eliminada correctamente' });
   } catch (err) {
-    res.status(500).json({ error: 'Error al eliminar asistencia' });
+    res.status(500).json({ error: 'Error al eliminar asistencia', detalle: err.message });
   }
 };
+// En asistenciasController.js - agregar este import al inicio
+const { Op } = require('sequelize');
 
+// ================= RESUMEN KPIs =================
+const resumenAsistencias = async (req, res) => {
+  try {
+    const { desde, hasta, empleadoId } = req.query;
+    const where = {};
+
+    if (empleadoId) where.empleado_id = Number(empleadoId);
+
+    if (desde || hasta) {
+      where.hora_entrada = {};
+      if (desde) where.hora_entrada[Op.gte] = new Date(desde + 'T00:00:00');
+      if (hasta) where.hora_entrada[Op.lte] = new Date(hasta + 'T23:59:59');
+    }
+
+    // Solo registros que tengan ambas horas para calcular duración
+    const registros = await Asistencia.findAll({
+      where: {
+        ...where,
+        hora_salida: { [Op.ne]: null }  // solo los que tienen salida
+      }
+    });
+
+    let totalSeg = 0;
+    registros.forEach(r => {
+      const diff = new Date(r.hora_salida) - new Date(r.hora_entrada);
+      if (diff > 0) totalSeg += Math.floor(diff / 1000);
+    });
+
+    res.json({
+      horas:    Math.floor(totalSeg / 3600),
+      minutos:  Math.floor((totalSeg % 3600) / 60),
+      segundos: totalSeg % 60,
+      totalRegistros: registros.length
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: 'Error al calcular resumen', detalle: err.message });
+  }
+};
 
 module.exports = {
   registrarEntrada,
   registrarSalida,
   obtenerAsistencias,
   obtenerAsistenciaPorId,
+  obtenerAsistenciasRango,
+  resumenAsistencias,
   eliminarAsistencia
 };

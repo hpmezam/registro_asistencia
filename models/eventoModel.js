@@ -16,11 +16,11 @@ const Evento = db.define('evento', {
     allowNull: true
   },
   fecha: {
-    type: DataTypes.DATEONLY,
+    type: DataTypes.DATE,
     allowNull: false
   },
   hora: {
-    type: DataTypes.DATE,
+    type: DataTypes.TIME,
     allowNull: false
   },
   lugar_id: {
