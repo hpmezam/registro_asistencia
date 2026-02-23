@@ -7,7 +7,24 @@ const Asistencia = db.define('asistencia', {
     autoIncrement: true,
     primaryKey: true
   },
+  empleado_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  tipo: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      isIn: [['diaria', 'evento']]
+    }
+  },
+  // Solo requerido cuando tipo = 'evento'
   empleado_evento_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  // Solo requerido cuando tipo = 'evento'
+  eventos_id: {
     type: DataTypes.INTEGER,
     allowNull: true
   },
@@ -19,20 +36,13 @@ const Asistencia = db.define('asistencia', {
     type: DataTypes.DATE,
     allowNull: true
   },
-  empleado_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
-  eventos_id: {
-    type: DataTypes.INTEGER,
+  latitud_registro: {
+    type: DataTypes.STRING,
     allowNull: true
   },
-  tipo: {
+  longitud_registro: {
     type: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      isIn: [['diaria', 'evento']]
-    }
+    allowNull: true
   }
 }, {
   tableName: 'asistencia',

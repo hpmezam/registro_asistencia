@@ -87,9 +87,9 @@ safeMount('/api/cargos', './routes/cargoRoutes');
 
 /* Asistencias: usa el archivo que SÍ existe en tu proyecto */
 safeMount('/api/asistencias', './routes/asistenciaRoutes');
-safeMount('/asistencias',           './routes/asistenciaRoutes'); // alias
-safeMount('/api/asistencia',        './routes/asistenciaRoutes'); // alias
-safeMount('/api/attendance',        './routes/asistenciaRoutes'); // alias
+// safeMount('/asistencias',           './routes/asistenciaRoutes'); // alias
+// safeMount('/api/asistencia',        './routes/asistenciaRoutes'); // alias
+// safeMount('/api/attendance',        './routes/asistenciaRoutes'); // alias
 
 /* Otros módulos opcionales */
 safeMount('/api/notificaciones',    './routes/notificacionRoutes');
