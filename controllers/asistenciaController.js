@@ -4,7 +4,8 @@ const Asistencia = require('../models/asistenciaModel');
 // ================= REGISTRAR ENTRADA =================
 const registrarEntrada = async (req, res) => {
   try {
-    const { empleado_id, eventos_id, empleado_evento_id, tipo } = req.body;
+    const empleado_id = req.user.id; // ← del token JWT
+    const { eventos_id, empleado_evento_id, tipo } = req.body;
 
     const asistencia = await Asistencia.create({
       empleado_id,
@@ -16,10 +17,49 @@ const registrarEntrada = async (req, res) => {
 
     res.status(201).json(asistencia);
   } catch (err) {
-    res.status(500).json({
-      error: 'Error al registrar entrada',
-      detalle: err.message
+    res.status(500).json({ error: 'Error al registrar entrada', detalle: err.message });
+  }
+};
+// ================= VER SI YA TIENE ENTRADA ACTIVA =================
+// GET /api/asistencias/activa
+const asistenciaActiva = async (req, res) => {
+  try {
+    const empleado_id = req.user.id; // ← del token JWT
+
+    const activa = await Asistencia.findOne({
+      where: {
+        empleado_id,
+        hora_salida: null  // sin salida = sigue activa
+      },
+      order: [['id', 'DESC']]
     });
+
+    res.json(activa || null);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al buscar asistencia activa', detalle: err.message });
+  }
+};
+const misAsistencias = async (req, res) => {
+  try {
+    const empleado_id = req.user.id; // ← del token JWT
+    const { desde, hasta } = req.query;
+
+    const where = { empleado_id };
+
+    if (desde || hasta) {
+      where.hora_entrada = {};
+      if (desde) where.hora_entrada[Op.gte] = new Date(desde + 'T00:00:00');
+      if (hasta) where.hora_entrada[Op.lte] = new Date(hasta + 'T23:59:59');
+    }
+
+    const asistencias = await Asistencia.findAll({
+      where,
+      order: [['id', 'DESC']]
+    });
+
+    res.json(asistencias);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener asistencias', detalle: err.message });
   }
 };
 
@@ -147,8 +187,8 @@ const resumenAsistencias = async (req, res) => {
     });
 
     res.json({
-      horas:    Math.floor(totalSeg / 3600),
-      minutos:  Math.floor((totalSeg % 3600) / 60),
+      horas: Math.floor(totalSeg / 3600),
+      minutos: Math.floor((totalSeg % 3600) / 60),
       segundos: totalSeg % 60,
       totalRegistros: registros.length
     });
@@ -165,5 +205,7 @@ module.exports = {
   obtenerAsistenciaPorId,
   obtenerAsistenciasRango,
   resumenAsistencias,
-  eliminarAsistencia
+  eliminarAsistencia,
+  asistenciaActiva,
+  misAsistencias
 };

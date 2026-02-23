@@ -41,7 +41,8 @@ const login = async (req, res) => {
         nombre: empleado.nombre,
         apellido: empleado.apellido,
         rol: empleado.rol?.descripcion,
-        cargo: empleado.cargo?.descripcion
+        cargo: empleado.cargo?.descripcion,
+        lugar_id: empleado.lugar_id
       }
     });
 
