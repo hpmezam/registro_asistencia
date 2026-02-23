@@ -3,6 +3,7 @@ const { DataTypes } = require('sequelize');
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 
+
 const Empleado = db.define('empleado', {
   id:            { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
   cedula:        { type: DataTypes.STRING, allowNull: false, unique: true },
@@ -36,4 +37,9 @@ Empleado.prototype.validatePassword = function (plain) {
   return bcrypt.compare(String(plain || ''), hash);
 };
 
+const Rol = require('./rolModel');
+const Cargo = require('./cargoModel');
+
+Empleado.belongsTo(Rol, { foreignKey: 'rol_id', as: 'rol' });
+Empleado.belongsTo(Cargo, { foreignKey: 'cargo_id', as: 'cargo' });
 module.exports = Empleado;
